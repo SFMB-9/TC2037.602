@@ -1,5 +1,20 @@
+# Salvador Federico Milanés Braniff | A01029956
+
+global verbose
 verbose = False
 
+arithmetic_table: list = [[ 1, 13,  7, 15,	8, 17, 18, 20, 21, 22,  6,	0,  0, 22, 22],
+                          [ 1, 11, 11, 11, 11, 11, 11, 11, 11,  3, 11, 11, 11,  5, 22],
+                          [ 2, 12, 12, 12, 12, 12, 12, 12, 12,	3, 12, 12, 12, 22, 22],
+                          [ 3, 12,  4, 12, 12, 12, 12, 12, 12, 22, 12, 12, 12, 22, 22],
+                          [ 4, 12, 12, 12, 12, 12, 12, 12, 12, 22, 12, 12, 12, 22, 22],
+                          [ 2, 12, 12, 12, 12, 12, 12, 12, 12, 22, 12, 12, 12, 22, 22],
+                          [ 6, 19, 19, 19, 19, 19, 19, 19, 19,	6,	6, 19, 19, 22, 22],
+                          [ 1, 22, 14, 22, 22, 22, 22, 14, 22, 22, 14, 14, 14, 22, 22],
+                          [16, 22, 16, 22,  9, 22, 22, 16, 22, 22, 16, 16, 14, 22, 22],
+                          [ 9,  9,	9,	9,	9,  9,	9,	9,	9,	9,	9,	9, 10,	9, 22]]
+
+# Function to load a transition table from a .tbl file
 def load_transition_table(file_name: str) -> list:
   table = []
   with open(file_name, 'r') as file:
@@ -10,6 +25,7 @@ def load_transition_table(file_name: str) -> list:
       table.append(row)
   return table
 
+# Function to print table data in a readable format
 def print_table(table: list) -> None:
   # Print numbers so that they are aligned
   for row in table:
@@ -17,6 +33,7 @@ def print_table(table: list) -> None:
       print(f'{cell:2}', end=' ')
     print()
 
+# Token definitions
 t_DIG = "0123456789"
 t_SUM = "+"
 t_SUB = "-"
@@ -32,24 +49,27 @@ t_DOT = "."
 t_BRK = " \t"
 t_NLN = "\n$"
 
-# verbose = True
-
+# Function to print verbose messages (debugging)
 def print_verbose(message: str) -> None:
+  global verbose
   if verbose:
     print(message)
 
+# Function to implement the arithmetic lexer
 def arithmetic_lexer(file_name: str) -> None:
-  transition_table = load_transition_table("transition_tables/arithmetic_lexer.tbl")
+  transition_table = arithmetic_table
   verbose and print_table(transition_table)
 
-  # iteratively generate the output file from the input file name
+  # iteratively generate the output file (will be used for colorizer)
   output_file_name = file_name.split("/")[-1]
   output_file_name = output_file_name.split(".")[0]
   output_file_name = f"output_files/{output_file_name}.out"
   output_file = open(output_file_name, 'w')
   
-
+  # read the input file and tokenize the lexemes
   with open(file_name, 'r') as file:
+    print_verbose("_ _ _               _ _ _")
+    print_verbose("      Start of file       ")
     for line in file:
       s = line + '$'
       print_verbose(f"line: {line}")
@@ -57,7 +77,8 @@ def arithmetic_lexer(file_name: str) -> None:
       p = 0
       lexem = ''
       token = ''
-      # print_verbose(f"s[p] then = {s[p]}, state = {state}, p = {p} |||||||||||||||")
+      
+      # iterate through the string until the end of the line ($)
       while((s[p] != '$') or (s[p] == '$' and state != 0) and (state != 15)):
         c = s[p]
         print_verbose(f'checking "{c}"')
@@ -92,12 +113,13 @@ def arithmetic_lexer(file_name: str) -> None:
         else:
           col = 14
         
+        # update the state based on the transition table
         state = int(transition_table[state][col])
         print_verbose(f'col = {col}, val = {state}')
         if state == 10:
           token = 'CMT'
           state = 0
-          p -= 1 # Do when extracting a multi-character token or one before.
+          p -= 1 # Syntax for extracting a multi-character token.
         elif state == 11:
           token = 'INT'
           state = 0
@@ -109,7 +131,7 @@ def arithmetic_lexer(file_name: str) -> None:
         elif state == 13:
           token = 'SUM'
           lexem = s[p]
-          state = 0 # Do when extracting a single-character token.
+          state = 0 # Syntax for extracting a single-character token.
         elif state == 14:
           token = 'SUB'
           state = 0
@@ -147,12 +169,12 @@ def arithmetic_lexer(file_name: str) -> None:
 
         if lexem != '' and token != '':
           print(f"{lexem} {token}")
-          # write to file
+          # write to file (will call colorizer here)
           output_file.write(f"{lexem} {token}\n")
           lexem = ''
           token = ''
   
-        # ternary check if verbose is True
+        # ternary check if verbose is True to print loop by loop.
         verbose and input(". . . ")
         if s[p] != '$':
           p += 1
@@ -166,6 +188,10 @@ def arithmetic_lexer(file_name: str) -> None:
   return
 
 def main():
+  global verbose
+  verbose = True
+
+  # Call the arithmetic lexer function with an example input file
   arithmetic_lexer("input_files/test.lex")
 
 if __name__ == "__main__":
