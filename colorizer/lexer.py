@@ -1,3 +1,5 @@
+verbose = False
+
 def load_transition_table(file_name: str) -> list:
   table = []
   with open(file_name, 'r') as file:
@@ -21,33 +23,41 @@ t_SUB = "-"
 t_MUL = "*"
 t_DIV = "/"
 t_POW = "^"
-t_EQS = "="
+t_ASN = "="
 t_SCI = "eE"
-t_CHR = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+t_CHR = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_"
 t_LBR = "("
 t_RBR = ")"
 t_DOT = "."
-t_BRK = " \t\n$"
+t_BRK = " \t"
+t_NLN = "\n$"
 
-verbose = True
-# verbose = False
+# verbose = True
+
 def print_verbose(message: str) -> None:
   if verbose:
     print(message)
 
 def arithmetic_lexer(file_name: str) -> None:
   transition_table = load_transition_table("transition_tables/arithmetic_lexer.tbl")
-  print_table(transition_table)
+  verbose and print_table(transition_table)
+
+  # iteratively generate the output file from the input file name
+  output_file_name = file_name.split("/")[-1]
+  output_file_name = output_file_name.split(".")[0]
+  output_file_name = f"output_files/{output_file_name}.out"
+  output_file = open(output_file_name, 'w')
+  
 
   with open(file_name, 'r') as file:
     for line in file:
       s = line + '$'
-      print_verbose(f"line = {line}")
+      print_verbose(f"line: {line}")
       state = 0
       p = 0
       lexem = ''
       token = ''
-      print_verbose(f"s[p] then = {s[p]}, state = {state}, p = {p} |||||||||||||||")
+      # print_verbose(f"s[p] then = {s[p]}, state = {state}, p = {p} |||||||||||||||")
       while((s[p] != '$') or (s[p] == '$' and state != 0) and (state != 15)):
         c = s[p]
         print_verbose(f'checking "{c}"')
@@ -63,77 +73,82 @@ def arithmetic_lexer(file_name: str) -> None:
           col = 4
         elif c == t_POW:
           col = 5
-        elif c == t_EQS:
+        elif c == t_ASN:
           col = 6
         elif c == t_LBR:
-          col = 8
-        elif c == t_RBR:
-          col = 9
-        elif c == t_DOT:
-          col = 10
-        elif c in t_SCI:
-          print(f"sci = {c}")
-          col = 11
-        elif c in t_CHR:
           col = 7
+        elif c == t_RBR:
+          col = 8
+        elif c in t_SCI:
+          col = 9
+        elif c in t_CHR:
+          col = 10
         elif c in t_BRK:
+          col = 11
+        elif c in t_NLN:
           col = 12
-        else:
+        elif c == t_DOT:
           col = 13
+        else:
+          col = 14
         
         state = int(transition_table[state][col])
         print_verbose(f'col = {col}, val = {state}')
-
-        if state == 6:
+        if state == 10:
+          token = 'CMT'
+          state = 0
+          p -= 1 # Do when extracting a multi-character token or one before.
+        elif state == 11:
           token = 'INT'
           state = 0
           p -= 1
-        elif state == 7:
+        elif state == 12:
           token = 'RLN'
           state = 0
           p -= 1
-        elif state == 8:
+        elif state == 13:
           token = 'SUM'
           lexem = s[p]
-          state = 0
-        elif state == 9:
-          token = 'SUB'
-          lexem = s[p]
-          state = 0
-        elif state == 10:
-          token = 'MUL'
-          lexem = s[p]
-          state = 0
-        elif state == 11:
-          token = 'DIV'
-          lexem = s[p]
-          state = 0
-        elif state == 12:
-          token = 'POW'
-          lexem = s[p]
-          state = 0
-        elif state == 13:
-          token = 'EQS'
-          lexem = s[p]
-          state = 0
+          state = 0 # Do when extracting a single-character token.
         elif state == 14:
-          token = 'VAR'
+          token = 'SUB'
           state = 0
           p -= 1
         elif state == 15:
-          token = 'LBR'
+          token = 'MUL'
           lexem = s[p]
           state = 0
         elif state == 16:
+          token = 'DIV'
+          state = 0
+        elif state == 17:
+          token = 'POW'
+          lexem = s[p]
+          state = 0
+        elif state == 18:
+          token = 'ASN'
+          lexem = s[p]
+          state = 0
+        elif state == 19:
+          token = 'VAR'
+          state = 0
+          p -= 1
+        elif state == 20:
+          token = 'LBR'
+          lexem = s[p]
+          state = 0
+        elif state == 21:
           token = 'RBR'
           lexem = s[p]
           state = 0
-        elif state == 17:
+        elif state == 22:
           token = 'ERR'
           p -= 1
 
         if lexem != '' and token != '':
           print(f"{lexem} {token}")
+          # write to file
+          output_file.write(f"{lexem} {token}\n")
           lexem = ''
           token = ''
   
@@ -145,6 +160,10 @@ def arithmetic_lexer(file_name: str) -> None:
         if state != 0:
           lexem += c
           print_verbose(f"lexem = {lexem}")
+
+    print_verbose("_ _ _ End of file _ _ _")
+  output_file.close()
+  return
 
 def main():
   arithmetic_lexer("input_files/test.lex")
