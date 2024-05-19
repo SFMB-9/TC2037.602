@@ -1,18 +1,8 @@
 # Salvador Federico Milanés Braniff | A01029956
+import highlighter as hl
 
 global verbose
 verbose = False
-
-arithmetic_table: list = [[ 1, 13,  7, 15,	8, 17, 18, 20, 21, 22,  6,	0,  0, 22, 22],
-                          [ 1, 11, 11, 11, 11, 11, 11, 11, 11,  3, 11, 11, 11,  5, 22],
-                          [ 2, 12, 12, 12, 12, 12, 12, 12, 12,	3, 12, 12, 12, 22, 22],
-                          [ 3, 12,  4, 12, 12, 12, 12, 12, 12, 22, 12, 12, 12, 22, 22],
-                          [ 4, 12, 12, 12, 12, 12, 12, 12, 12, 22, 12, 12, 12, 22, 22],
-                          [ 2, 12, 12, 12, 12, 12, 12, 12, 12, 22, 12, 12, 12, 22, 22],
-                          [ 6, 19, 19, 19, 19, 19, 19, 19, 19,	6,	6, 19, 19, 22, 22],
-                          [ 1, 22, 14, 22, 22, 22, 22, 14, 22, 22, 14, 14, 14, 22, 22],
-                          [16, 22, 16, 22,  9, 22, 22, 16, 22, 22, 16, 16, 14, 22, 22],
-                          [ 9,  9,	9,	9,	9,  9,	9,	9,	9,	9,	9,	9, 10,	9, 22]]
 
 # Function to load a transition table from a .tbl file
 def load_transition_table(file_name: str) -> list:
@@ -55,19 +45,22 @@ def print_verbose(message: str) -> None:
   if verbose:
     print(message)
 
+# verbose = True
+
 # Function to implement the arithmetic lexer
 def arithmetic_lexer(file_name: str) -> None:
-  transition_table = arithmetic_table
+  transition_table = load_transition_table("transition_tables/arithmetic_lexer.tbl")
   verbose and print_table(transition_table)
 
   # iteratively generate the output file (will be used for colorizer)
   output_file_name = file_name.split("/")[-1]
   output_file_name = output_file_name.split(".")[0]
-  output_file_name = f"output_files/{output_file_name}.out"
+  output_file_name = f"output_files/{output_file_name}.html"
   output_file = open(output_file_name, 'w')
   
   # read the input file and tokenize the lexemes
   with open(file_name, 'r') as file:
+    output_file.write(hl.format_html(hl.load_theme("css_themes/avatar.theme")))
     print_verbose("_ _ _               _ _ _")
     print_verbose("      Start of file       ")
     for line in file:
@@ -169,10 +162,15 @@ def arithmetic_lexer(file_name: str) -> None:
 
         if lexem != '' and token != '':
           print(f"{lexem} {token}")
-          # write to file (will call colorizer here)
-          output_file.write(f"{lexem} {token}\n")
+
+          # Call the colorizer function
+          formatted_token = hl.colorize(lexem, token)
+          output_file.write(formatted_token + "\n")
+          
           lexem = ''
           token = ''
+          if col == 12:
+            output_file.write("<br>")
   
         # ternary check if verbose is True to print loop by loop.
         verbose and input(". . . ")
@@ -188,9 +186,6 @@ def arithmetic_lexer(file_name: str) -> None:
   return
 
 def main():
-  global verbose
-  verbose = True
-
   # Call the arithmetic lexer function with an example input file
   arithmetic_lexer("input_files/test.lex")
 

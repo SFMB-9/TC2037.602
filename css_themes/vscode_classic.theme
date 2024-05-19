@@ -1,0 +1,14 @@
+body = {'background-color': 'rgb(30, 31, 30)', 'font-family': 'Consolas', 'font-size': '14px'}
+CMT = {'color': 'green'}
+INT = {'color': 'rgb(155, 248, 167)'}
+RLN = {'color': 'rgb(155, 248, 167)'}
+SUM = {'color': 'white'}
+SUB = {'color': 'white'}
+MUL = {'color': 'white'}
+DIV = {'color': 'white'}
+POW = {'color': 'white'}
+ASN = {'color': 'white'}
+VAR = {'color': 'rgb(96, 222, 253)'}
+LBR = {'color': 'yellow'}
+RBR = {'color': 'yellow'}
+ERR = {'color': 'red'}
