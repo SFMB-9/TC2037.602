@@ -187,7 +187,7 @@ def arithmetic_lexer(file_name: str) -> None:
 
 def main():
   # Call the arithmetic lexer function with an example input file
-  arithmetic_lexer("input_files/test.lex")
+  arithmetic_lexer("input_files/sample.lex")
 
 if __name__ == "__main__":
   main()
