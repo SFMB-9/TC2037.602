@@ -1,5 +1,7 @@
 # Salvador Federico Milanés Braniff | A01029956
 import highlighter as hl
+import os
+from concurrent.futures import ThreadPoolExecutor
 
 global verbose
 verbose = False
@@ -48,6 +50,8 @@ def print_verbose(message: str) -> None:
 # verbose = True
 
 # Function to implement the arithmetic lexer
+if not os.path.exists('output_files'):
+    os.makedirs('output_files')
 def arithmetic_lexer(file_name: str) -> None:
   transition_table = load_transition_table("transition_tables/arithmetic_lexer.tbl")
   verbose and print_table(transition_table)
@@ -185,9 +189,30 @@ def arithmetic_lexer(file_name: str) -> None:
   output_file.close()
   return
 
+# --- Function to process directories and files ---
+def process_directory(directory: str) -> None:
+  for root, _, files, in os.walk(directory):
+    for file in files:
+      if file.endswith(".lex"):
+        file_path= os.path.join(root, file)
+        arithmetic_lexer(file_path)
+
+def process_directory_parallel(directory: str) -> None:
+    tasks = []
+    with ProcessPoolExecutor() as executor:
+        for root, _, files in os.walk(directory):
+            for file in files:
+                if file.endswith('.lex'):
+                    file_path = os.path.join(root, file)
+                    tasks.append(executor.submit(arithmetic_lexer, file_path))
+        for task in tasks:
+            task.result()
+
 def main():
-  # Call the arithmetic lexer function with an example input file
-  arithmetic_lexer("input_files/test.lex")
+  # send the route of the file to the lexers
+  directories = ['input_files']
+  for directory in directories:
+    process_directory(directory)
 
 if __name__ == "__main__":
   main()
