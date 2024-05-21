@@ -31,4 +31,6 @@ def format_html(theme):
 
 # Receive a token and replace it with an html snippet to define its color.
 def colorize(lexem, token):
+    # remove spaces from the token
+    token = token.replace(' ', '')
     return f'<span class="{token}">{lexem}</span>'

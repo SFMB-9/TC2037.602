@@ -1,5 +1,5 @@
 b=7
 
-a = 32.4 *(-8.6 - b)/  6.1E-8
+a = 32.4 *(-8.6 - b)/  6.1E-8: 3
 
 d = a ^ b // Esto es un comentario
