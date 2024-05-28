@@ -54,6 +54,7 @@ def print_verbose(message: str) -> None:
 #verbose = True
 
 # Function to implement the arithmetic lexer
+
 def arithmetic_lexer(file_name: str) -> None:
   if not os.path.exists('output_files'):
     os.makedirs('output_files')
@@ -75,6 +76,11 @@ def arithmetic_lexer(file_name: str) -> None:
     for line in file:
       s = line + '$'
       print_verbose(f"line: {line}")
+      # if line starts with spaces, tabs or newlines, replace them with &nbsp;
+      if line[0] in t_NLN:
+        output_file.write("<br>")
+      elif line[0] in t_SPC:
+        output_file.write("<br>&nbsp&nbsp")
       state = 0
       p = 0
       lexem = ''
@@ -82,6 +88,7 @@ def arithmetic_lexer(file_name: str) -> None:
       
       # iterate through the string until the end of the line ($)
       while((s[p] != '$') or (s[p] == '$' and state != 0) and (state != 24)):
+
         c = s[p]
         print_verbose(f'checking "{c}"')
         if c in t_ABC:
@@ -182,13 +189,15 @@ def arithmetic_lexer(file_name: str) -> None:
 
           # Call the colorizer function
           formatted_token = hl.colorize(lexem, token)
-          output_file.write(formatted_token + "\n")
+          output_file.write(formatted_token)
           
           lexem = ''
           token = ''
           if col == 12:
             output_file.write("<br>")
-  
+        
+        if col == 10:
+          output_file.write(" ")
         # ternary check if verbose is True to print loop by loop.
         verbose and input(". . . ")
         if s[p] != '$':
@@ -228,6 +237,7 @@ def file_sequencial(file_path: str) -> None:
 def main():
   directory_path = './input_files'
   process_directory_sequencial(directory_path)
+
 
 if __name__ == "__main__":
   main()

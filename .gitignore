@@ -1,4 +1,5 @@
-/output_files/
+/output_files/*
+!output_files/.gitkeep
 graph.py
 tempCodeRunnerFile.py
 __pycache__/
