@@ -1,7 +1,7 @@
 # Salvador Federico Milanés Braniff | A01029956
 import highlighter as hl
 import os
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
 
 global verbose
 verbose = False
@@ -26,6 +26,7 @@ def print_table(table: list) -> None:
     print()
 
 # Token definitions
+t_ABC = "abcdfghijklmnopqrstuvwxyzABCDFGHIJKLMNOPQRSTUVWXYZ"
 t_DIG = "0123456789"
 t_SUM = "+"
 t_SUB = "-"
@@ -33,13 +34,16 @@ t_MUL = "*"
 t_DIV = "/"
 t_POW = "^"
 t_ASN = "="
-t_SCI = "eE"
-t_CHR = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_"
 t_LBR = "("
 t_RBR = ")"
+t_Ee = "eE"
+t_RETURN = "\n"
 t_DOT = "."
-t_BRK = " \t"
-t_NLN = "\n$"
+t_CMT = "#"
+t_BLANK = " \t$"
+t_FLOOR = "_"
+t_RESERVE = "if else while for print return"
+t_END = "$"
 
 # Function to print verbose messages (debugging)
 def print_verbose(message: str) -> None:
@@ -47,13 +51,14 @@ def print_verbose(message: str) -> None:
   if verbose:
     print(message)
 
-# verbose = True
+#verbose = True
 
 # Function to implement the arithmetic lexer
-if not os.path.exists('output_files'):
-    os.makedirs('output_files')
 def arithmetic_lexer(file_name: str) -> None:
-  transition_table = load_transition_table("transition_tables/arithmetic_lexer.tbl")
+  if not os.path.exists('output_files'):
+    os.makedirs('output_files')
+
+  transition_table = load_transition_table("transition_tables/updated_DFA.tbl")
   verbose and print_table(transition_table)
 
   # iteratively generate the output file (will be used for colorizer)
@@ -64,7 +69,7 @@ def arithmetic_lexer(file_name: str) -> None:
   
   # read the input file and tokenize the lexemes
   with open(file_name, 'r') as file:
-    output_file.write(hl.format_html(hl.load_theme("css_themes/avatar.theme")))
+    output_file.write(hl.format_html(hl.load_theme("css_themes/vscode_classic.theme")))
     print_verbose("_ _ _               _ _ _")
     print_verbose("      Start of file       ")
     for line in file:
@@ -76,93 +81,101 @@ def arithmetic_lexer(file_name: str) -> None:
       token = ''
       
       # iterate through the string until the end of the line ($)
-      while((s[p] != '$') or (s[p] == '$' and state != 0) and (state != 15)):
+      while((s[p] != '$') or (s[p] == '$' and state != 0) and (state != 24)):
         c = s[p]
         print_verbose(f'checking "{c}"')
-        if c in t_DIG:
+        if c in t_ABC:
           col = 0
-        elif c == t_SUM:
+        elif c in t_DIG:
           col = 1
-        elif c == t_SUB:
+        elif c == t_SUM:
           col = 2
-        elif c == t_MUL:
+        elif c == t_SUB:
           col = 3
-        elif c == t_DIV:
+        elif c == t_MUL:
           col = 4
-        elif c == t_POW:
+        elif c == t_DIV:
           col = 5
-        elif c == t_ASN:
+        elif c == t_POW:
           col = 6
-        elif c == t_LBR:
+        elif c == t_ASN:
           col = 7
-        elif c == t_RBR:
+        elif c == t_LBR:
           col = 8
-        elif c in t_SCI:
+        elif c == t_RBR:
           col = 9
-        elif c in t_CHR:
+        elif c in t_Ee:
           col = 10
-        elif c in t_BRK:
+        elif c in t_RETURN:
           col = 11
-        elif c in t_NLN:
-          col = 12
         elif c == t_DOT:
+          col = 12
+        elif c == t_CMT:
           col = 13
-        else:
+        elif c in t_BLANK:
           col = 14
+        elif c == t_FLOOR:
+          col = 15
+        else:
+          col = 16
         
         # update the state based on the transition table
         state = int(transition_table[state][col])
         print_verbose(f'col = {col}, val = {state}')
-        if state == 10:
+        if state == 18:
           token = 'CMT'
           state = 0
-          p -= 1 # Syntax for extracting a multi-character token.
-        elif state == 11:
+        elif state == 21:
           token = 'INT'
           state = 0
           p -= 1
-        elif state == 12:
+        elif state in [19, 20]:
           token = 'RLN'
           state = 0
           p -= 1
-        elif state == 13:
+        elif state == 10:
           token = 'SUM'
           lexem = s[p]
-          state = 0 # Syntax for extracting a single-character token.
-        elif state == 14:
+          state = 0
+        elif state == 11:
           token = 'SUB'
           state = 0
-          p -= 1
-        elif state == 15:
+        elif state == 12:
           token = 'MUL'
           lexem = s[p]
           state = 0
-        elif state == 16:
+        elif state == 13:
           token = 'DIV'
           state = 0
-        elif state == 17:
+        elif state == 14:
           token = 'POW'
           lexem = s[p]
           state = 0
-        elif state == 18:
+        elif state == 15:
           token = 'ASN'
           lexem = s[p]
           state = 0
-        elif state == 19:
+        elif state == 22:
           token = 'VAR'
           state = 0
           p -= 1
-        elif state == 20:
+        elif state == 23:
+          if c in t_RESERVE:
+            token = 'RESERVE'
+          else:
+            token = 'VAR'
+          state = 0
+          p -= 1
+        elif state == 16:
           token = 'LBR'
           lexem = s[p]
           state = 0
-        elif state == 21:
+        elif state == 17:
           token = 'RBR'
           lexem = s[p]
           state = 0
-        elif state == 22:
+        elif state == 24:
           token = 'ERR'
-          p -= 1
 
         if lexem != '' and token != '':
           print(f"{lexem} {token}")
@@ -189,15 +202,16 @@ def arithmetic_lexer(file_name: str) -> None:
   output_file.close()
   return
 
-# --- Function to process directories and files ---
-def process_directory(directory: str) -> None:
-  for root, _, files, in os.walk(directory):
-    for file in files:
+# --- Functions to process directories and files ---
+def process_file_sequencial(directory_path: str) -> None:
+    directory = os.listdir(directory_path)
+    for file in directory:
+      file_path = os.path.join(directory_path, file)
       if file.endswith(".lex"):
-        file_path= os.path.join(root, file)
+        print(f"Processing file: {file}")
         arithmetic_lexer(file_path)
 
-def process_directory_parallel(directory: str) -> None:
+def process_file_parallel(file: str) -> None:
     tasks = []
     with ProcessPoolExecutor() as executor:
         for root, _, files in os.walk(directory):
@@ -209,10 +223,8 @@ def process_directory_parallel(directory: str) -> None:
             task.result()
 
 def main():
-  # send the route of the file to the lexers
-  directories = ['input_files']
-  for directory in directories:
-    process_directory(directory)
+  directory_path = './input_files'
+  process_file_sequencial(directory_path)
 
 if __name__ == "__main__":
   main()
