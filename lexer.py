@@ -63,6 +63,7 @@ def arithmetic_lexer(file_name: str) -> None:
 
   # iteratively generate the output file (will be used for colorizer)
   output_file_name = file_name.split("/")[-1]
+  output_file_name = output_file_name.split("\\")[-1]
   output_file_name = output_file_name.split(".")[0]
   output_file_name = f"output_files/{output_file_name}.html"
   output_file = open(output_file_name, 'w')
