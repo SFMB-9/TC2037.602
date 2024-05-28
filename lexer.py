@@ -203,7 +203,7 @@ def arithmetic_lexer(file_name: str) -> None:
   return
 
 # --- Functions to process directories and files ---
-def process_file_sequencial(directory_path: str) -> None:
+def process_directory_sequencial(directory_path: str) -> None:
     directory = os.listdir(directory_path)
     for file in directory:
       file_path = os.path.join(directory_path, file)
@@ -221,6 +221,9 @@ def process_file_parallel(file: str) -> None:
                     tasks.append(executor.submit(arithmetic_lexer, file_path))
         for task in tasks:
             task.result()
+
+def file_sequencial(file_path: str) -> None:
+    arithmetic_lexer(file_path)
 
 def main():
   directory_path = './input_files'
