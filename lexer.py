@@ -1,5 +1,7 @@
 # Salvador Federico Milanés Braniff | A01029956
 import highlighter as hl
+import os
+from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
 
 global verbose
 verbose = False
@@ -24,6 +26,7 @@ def print_table(table: list) -> None:
     print()
 
 # Token definitions
+t_ABC = "abcdfghijklmnopqrstuvwxyzABCDFGHIJKLMNOPQRSTUVWXYZ"
 t_DIG = "0123456789"
 t_SUM = "+"
 t_SUB = "-"
@@ -52,10 +55,14 @@ def print_verbose(message: str) -> None:
   if verbose:
     print(message)
 
-# verbose = True
+verbose = True
 
 # Function to implement the arithmetic lexer
-def python_lexer(file_name: str) -> None:
+
+def arithmetic_lexer(file_name: str) -> None:
+  if not os.path.exists('output_files'):
+    os.makedirs('output_files')
+
   transition_table = load_transition_table("transition_tables/python_lexer.tbl")
   verbose and print_table(transition_table)
 
@@ -87,23 +94,23 @@ def python_lexer(file_name: str) -> None:
       while((s[p] != '$') or (s[p] == '$' and state != 0) and (state != 29)):
         c = s[p]
         print_verbose(f'checking "{c}"')
-        if c in t_DIG:
+        if c in t_ABC:
           col = 0
-        elif c == t_SUM:
+        elif c in t_DIG:
           col = 1
-        elif c == t_SUB:
+        elif c == t_SUM:
           col = 2
-        elif c == t_MUL:
+        elif c == t_SUB:
           col = 3
-        elif c == t_DIV:
+        elif c == t_MUL:
           col = 4
-        elif c == t_POW:
+        elif c == t_DIV:
           col = 5
-        elif c == t_ASN:
+        elif c == t_POW:
           col = 6
-        elif c == t_LBR:
+        elif c == t_ASN:
           col = 7
-        elif c == t_RBR:
+        elif c == t_LBR:
           col = 8
         elif c == t_DTS:
           col = 9
@@ -208,8 +215,6 @@ def python_lexer(file_name: str) -> None:
           state = 0
         elif state == 29:
           token = 'ERR'
-          state = 0
-          p -= 1
 
         if lexem != '' and token != '':
           print(f"{lexem} {token}")
@@ -238,10 +243,34 @@ def python_lexer(file_name: str) -> None:
   output_file.close()
   return
 
+# --- Functions to process directories and files ---
+def process_directory_sequencial(directory_path: str) -> None:
+    directory = os.listdir(directory_path)
+    for file in directory:
+      file_path = os.path.join(directory_path, file)
+      if file.endswith(".lex"):
+        print(f"Processing file: {file}")
+        arithmetic_lexer(file_path)
+
+def process_file_parallel(file: str) -> None:
+    tasks = []
+    directory = os.path.dirname(file)
+    with ProcessPoolExecutor() as executor:
+        for root, _, files in os.walk(directory):
+            for file in files:
+                if file.endswith('.lex'):
+                    file_path = os.path.join(root, file)
+                    tasks.append(executor.submit(arithmetic_lexer, file_path))
+        for task in tasks:
+            task.result()
+
+def file_sequential(file_path: str) -> None:
+    arithmetic_lexer(file_path)
+
 def main():
   # Call the arithmetic lexer function with an example input file
   print("Arithmetic Lexer")
-  python_lexer("input_files/extended.lex")
+  arithmetic_lexer("input_files/extended.lex")
 
 if __name__ == "__main__":
   main()
