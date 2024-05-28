@@ -267,8 +267,8 @@ def process_file_parallel(file: str) -> None:
         for task in tasks:
             task.result()
 
-def file_sequential(file_path: str) -> None:
-    arithmetic_lexer(file_path)
+def file_sequential(file_path: str, transition_table = load_transition_table("transition_tables/python_lexer.tbl")) -> None:
+    arithmetic_lexer(file_path, transition_table)
 
 def main():
   # Call the arithmetic lexer function with an example input file
