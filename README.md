@@ -23,7 +23,9 @@ TC2037.602
 │
 ├── transition_tables/       # Reference transition tables for the lexer
 │
-└── lexer.py                 # Main script for the lexer and HTML formatter
+├── highlighter.py
+├── lexer.py
+└── timeComparison.py        # Main script for the lexer and HTML formatter
 ```
 
 
@@ -48,6 +50,13 @@ TC2037.602
 3. View Output
    
     After running the lexer, check the `output_files` directory for the generated HTML files corresponding to the processed `.lex` input files.
+
+4. Check sequential v. parallel metrics
+   
+   Run the `timeComparison.py` script to evaluate and compare execution times:
+   ```bash
+    python timeComparison.py
+    ```
 
 ## Additional Notes
 - Modify the `verbose` variable in `lexer.py` to enable detailed token identification during execution.
