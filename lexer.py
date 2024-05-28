@@ -26,7 +26,6 @@ def print_table(table: list) -> None:
     print()
 
 # Token definitions
-t_ABC = "abcdfghijklmnopqrstuvwxyzABCDFGHIJKLMNOPQRSTUVWXYZ"
 t_DIG = "0123456789"
 t_SUM = "+"
 t_SUB = "-"
@@ -39,7 +38,9 @@ t_RBR = ")"
 t_DTS = ":"
 t_HSH = "#"
 t_E = "eE"
+t_FUN = ["print", "input", "len", "range", "abs", "round", "max", "min", "sum", "sorted", "reversed", "zip", "enumerate", "map", "filter", "reduce"]
 t_CON = ["if", "elif", "else","while", "for", "in", "break", "continue", "return"]
+t_TYP = ["int", "float", "str", "bool"]
 t_BOL = ["True", "False"]
 t_LGO = ["and", "or", "not"]
 t_CHR = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_"
@@ -55,28 +56,27 @@ def print_verbose(message: str) -> None:
   if verbose:
     print(message)
 
-verbose = True
+# verbose = True
 
 # Function to implement the arithmetic lexer
 
-def arithmetic_lexer(file_name: str) -> None:
+def arithmetic_lexer(file_path: str, transition_table: list) -> None:
   if not os.path.exists('output_files'):
     os.makedirs('output_files')
 
-  transition_table = load_transition_table("transition_tables/python_lexer.tbl")
-  verbose and print_table(transition_table)
-
   # iteratively generate the output file (will be used for colorizer)
-  output_file_name = file_name.split("/")[-1]
-  output_file_name = output_file_name.split(".")[0]
+  file_path = file_path.split("/")[-1]
+  file_name = file_path.split("\\")[-1]
+  output_file_name = file_name.split(".")[0]
   output_file_name = f"output_files/{output_file_name}.html"
   output_file = open(output_file_name, 'w')
   
   # read the input file and tokenize the lexemes
-  with open(file_name, 'r') as file:
+  with open(file_path, 'r') as file:
     output_file.write(hl.format_html(hl.load_theme("css_themes/vscode_classic.theme")))
     print_verbose("_ _ _               _ _ _")
-    print_verbose("      Start of file       ")
+    print_verbose(f"     {file_name}")
+    
     for line in file:
       s = line + '$'
       print_verbose(f"line: {line}")
@@ -94,23 +94,23 @@ def arithmetic_lexer(file_name: str) -> None:
       while((s[p] != '$') or (s[p] == '$' and state != 0) and (state != 29)):
         c = s[p]
         print_verbose(f'checking "{c}"')
-        if c in t_ABC:
+        if c in t_DIG:
           col = 0
-        elif c in t_DIG:
-          col = 1
         elif c == t_SUM:
-          col = 2
+          col = 1
         elif c == t_SUB:
-          col = 3
+          col = 2
         elif c == t_MUL:
-          col = 4
+          col = 3
         elif c == t_DIV:
-          col = 5
+          col = 4
         elif c == t_POW:
-          col = 6
+          col = 5
         elif c == t_ASN:
-          col = 7
+          col = 6
         elif c == t_LBR:
+          col = 7
+        elif c == t_RBR:
           col = 8
         elif c == t_DTS:
           col = 9
@@ -120,7 +120,6 @@ def arithmetic_lexer(file_name: str) -> None:
           col = 11
         elif c in t_NLN:
           col = 12
-          print_verbose(f"char = {c}")
         elif c in t_E:
           col = 13
         elif c in t_CHR:
@@ -183,8 +182,12 @@ def arithmetic_lexer(file_name: str) -> None:
           state = 0
           p -= 1
         elif state == 23:
-          if lexem in t_CON:
+          if lexem in t_FUN:
+            token = 'FUN'
+          elif lexem in t_CON:
             token = 'CON'
+          elif lexem in t_TYP:
+            token = 'TYP'
           elif lexem in t_BOL:
             token = 'BOL'
           elif lexem in t_LGO:
@@ -244,13 +247,13 @@ def arithmetic_lexer(file_name: str) -> None:
   return
 
 # --- Functions to process directories and files ---
-def process_directory_sequencial(directory_path: str) -> None:
+def process_directory_sequential(directory_path: str, transition_table: list) -> None:
     directory = os.listdir(directory_path)
     for file in directory:
       file_path = os.path.join(directory_path, file)
       if file.endswith(".lex"):
         print(f"Processing file: {file}")
-        arithmetic_lexer(file_path)
+        arithmetic_lexer(file_path, transition_table)
 
 def process_file_parallel(file: str) -> None:
     tasks = []
@@ -269,8 +272,9 @@ def file_sequential(file_path: str) -> None:
 
 def main():
   # Call the arithmetic lexer function with an example input file
-  print("Arithmetic Lexer")
-  arithmetic_lexer("input_files/extended.lex")
+  transition_table = load_transition_table("transition_tables/python_lexer.tbl")
+  verbose and print_table(transition_table)
+  process_directory_sequential("input_files", transition_table)
 
 if __name__ == "__main__":
   main()

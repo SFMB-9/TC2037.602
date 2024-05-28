@@ -11,4 +11,4 @@ g = a / 2
 
 f = d^2
 
-// Comment
+# Comment
