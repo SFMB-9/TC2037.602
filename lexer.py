@@ -42,7 +42,7 @@ t_DOT = "."
 t_CMT = "#"
 t_BLANK = " \t$"
 t_FLOOR = "_"
-t_RESERVE = "if else while for print return"
+t_RESERVE = ["if", "else", "elif", "while", "for", "print", "return", "break", "continue", "const", "int", "float", "string", "bool", "True", "False", "and", "or", "not", "in", "input", "row", "column"]
 t_END = "$"
 
 # Function to print verbose messages (debugging)
@@ -160,7 +160,7 @@ def arithmetic_lexer(file_name: str) -> None:
           state = 0
           p -= 1
         elif state == 23:
-          if c in t_RESERVE:
+          if lexem in t_RESERVE:
             token = 'RESERVE'
           else:
             token = 'VAR'
@@ -227,7 +227,7 @@ def file_sequencial(file_path: str) -> None:
 
 def main():
   directory_path = './input_files'
-  process_file_sequencial(directory_path)
+  process_directory_sequencial(directory_path)
 
 if __name__ == "__main__":
   main()
