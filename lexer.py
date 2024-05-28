@@ -31,28 +31,18 @@ t_MUL = "*"
 t_DIV = "/"
 t_POW = "^"
 t_ASN = "="
-t_a = "a"
-t_d = "d"
-t_e = "e"
-t_E = "E"
-t_f = "f"
-t_F = "F"
-t_i = "i"
-t_l = "l"
-t_n = "n"
-t_o = "o"
-t_r = "r"
-t_s = "s"
-t_t = "t"
-t_T = "T"
-t_u = "u"
-t_CHR = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_"
 t_LBR = "("
 t_RBR = ")"
+t_DTS = ":"
+t_HSH = "#"
+t_E = "eE"
+t_CON = ["if", "elif", "else","while", "for", "in", "break", "continue", "return"]
+t_BOL = ["True", "False"]
+t_LGO = ["and", "or", "not"]
+t_CHR = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_"
 t_DOT = "."
 t_SPC = " "
 t_TAB = "\t"
-t_DTS = ":"
 t_QTS = "\""
 t_NLN = "\n$"
 
@@ -94,7 +84,7 @@ def python_lexer(file_name: str) -> None:
       token = ''
       
       # iterate through the string until the end of the line ($)
-      while((s[p] != '$') or (s[p] == '$' and state != 0) and (state != 51)):
+      while((s[p] != '$') or (s[p] == '$' and state != 0) and (state != 29)):
         c = s[p]
         print_verbose(f'checking "{c}"')
         if c in t_DIG:
@@ -115,124 +105,108 @@ def python_lexer(file_name: str) -> None:
           col = 7
         elif c == t_RBR:
           col = 8
-        elif c in t_DTS:
+        elif c == t_DTS:
           col = 9
-        elif c in t_SPC:
+        elif c == t_HSH:
           col = 10
-        elif c == t_TAB:
+        elif c in t_SPC or c == t_TAB:
           col = 11
         elif c in t_NLN:
           col = 12
-        elif c == t_a:
+          print_verbose(f"char = {c}")
+        elif c in t_E:
           col = 13
-        elif c == t_d:
-          col = 14
-        elif c == t_e:
-          col = 15
-        elif c == t_E:
-          col = 16
-        elif c == t_f:
-          col = 17
-        elif c == t_F:
-          col = 18
-        elif c == t_i:
-          col = 19
-        elif c == t_l:
-          col = 20
-        elif c == t_n:
-          col = 21
-        elif c == t_o:
-          col = 22
-        elif c == t_r:
-          col = 23
-        elif c == t_s:
-          col = 24
-        elif c == t_t:
-          col = 25
-        elif c == t_T:
-          col = 26
-        elif c == t_u:
-          col = 27
         elif c in t_CHR:
-          col = 28
+          col = 14
         elif c == t_DOT:
-          col = 29
+          col = 15
         elif c == t_QTS:
-          col = 30
+          col = 16
         else:
-          col = 31
+          col = 17
         
         # update the state based on the transition table
         state = int(transition_table[state][col])
         print_verbose(f'col = {col}, val = {state}')
-        if state == 36:
+        if state == 11:
           token = 'CMT'
           state = 0
           p -= 1 # Syntax for extracting a multi-character token.
-        elif state == 37:
+        elif state == 12:
           token = 'INT'
           state = 0
           p -= 1
-        elif state == 38:
+        elif state == 13:
           token = 'RLN'
           state = 0
           p -= 1
-        elif state == 39:
+        elif state == 14:
           token = 'SUM'
           lexem = s[p]
           state = 0 # Syntax for extracting a single-character token.
-        elif state == 40:
+        elif state == 15:
           token = 'SUB'
           state = 0
           p -= 1
-        elif state == 41:
+        elif state == 16:
           token = 'MUL'
           lexem = s[p]
           state = 0
-        elif state == 42:
+        elif state == 17:
           token = 'DIV'
           state = 0
-        elif state == 43:
+        elif state == 18:
           token = 'POW'
           lexem = s[p]
           state = 0
-        elif state == 44:
+        elif state == 19:
           token = 'ASN'
           lexem = s[p]
           state = 0
-        elif state == 45:
+        elif state == 20:
           token = 'LGO'
           state = 0
           p -= 1
-        elif state == 46:
+        elif state == 21:
           token = 'CON'
           state = 0
           p -= 1
-        elif state == 47:
+        elif state == 22:
           token = 'BOL'
           state = 0
           p -= 1
-        elif state == 48:
-          token = 'VAR'
+        elif state == 23:
+          if lexem in t_CON:
+            token = 'CON'
+          elif lexem in t_BOL:
+            token = 'BOL'
+          elif lexem in t_LGO:
+            token = 'LGO'
+          else:
+            token = 'VAR'
           state = 0
           p -= 1
-        elif state == 49:
+        elif state == 24:
           token = 'LBR'
           lexem = s[p]
           state = 0
-        elif state == 50:
+        elif state == 25:
           token = 'RBR'
           lexem = s[p]
           state = 0
-        elif state == 51:
+        elif state == 26:
           token = 'DTS'
           lexem = s[p]
           state = 0
-        elif state == 52:
+        elif state == 27:
           token = 'QTS'
           lexem = s[p]
           state = 0
-        elif state == 53:
+        elif state == 28:
+          token = 'STR'
+          lexem = s[p]
+          state = 0
+        elif state == 29:
           token = 'ERR'
           state = 0
           p -= 1
@@ -246,10 +220,10 @@ def python_lexer(file_name: str) -> None:
           
           lexem = ''
           token = ''
-          if col == 12:
+          if col == 12: # If the character is a newline, print a line break.
             output_file.write("<br>")
         
-        if col == 10:
+        if col == 11: # If the character is a space
           output_file.write(" ")
         # ternary check if verbose is True to print loop by loop.
         verbose and input(". . . ")
@@ -266,6 +240,7 @@ def python_lexer(file_name: str) -> None:
 
 def main():
   # Call the arithmetic lexer function with an example input file
+  print("Arithmetic Lexer")
   python_lexer("input_files/extended.lex")
 
 if __name__ == "__main__":
