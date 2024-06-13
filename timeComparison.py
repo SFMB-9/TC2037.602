@@ -1,5 +1,6 @@
 # Salvador Federico Milanés Braniff | A01029956
 # Eduardo Porto Morales | A01027893
+# Valeria Tapia | A01028038
 
 import multiprocessing
 import time
@@ -12,15 +13,15 @@ def timeComparison(func, arg):
     end= time.time()
     return end - start
 
-def sequencial_tasks(directory, directory_path, transition_table):
-    print("Beginnig sequential tasks")
+def sequential_tasks(directory, directory_path, transition_table):
+    #print("Beginnig sequential tasks")
     for file in directory:
         file_path = os.path.join(directory_path, file)
         process_file(file_path, transition_table)
-    print("Sequential tasks finished")
+    #print("Sequential tasks finished")
 
 def parallel_tasks(directory, directory_path, transition_table):
-    print("Beginnig parallel tasks")
+    #print("Beginnig parallel tasks")
     processes = []
     for file in directory:
         file_path = os.path.join(directory_path, file)
@@ -30,28 +31,36 @@ def parallel_tasks(directory, directory_path, transition_table):
     
     for process in processes:
         process.join()
-    print("Parallel tasks finished")
+    #print("Parallel tasks finished")
 
 def main():
     directory_path = './input_files'
     directory = os.listdir(directory_path)
     transition_table = load_transition_table("transition_tables/python_lexer.tbl")
 
+    # Sequential execution time
     ti = time.perf_counter()
-    sequencial_tasks(directory, directory_path, transition_table)
+    sequential_tasks(directory, directory_path, transition_table)
     tf = time.perf_counter()
-    sequencial_time = tf - ti
-    print(f"Sequential time: {sequencial_time:0.4f} seconds")
+    sequential_time = tf - ti
+    print(f"Sequential time: {sequential_time:0.4f} seconds")
+
+    # Parallel execution time
     ti = time.perf_counter()
     parallel_tasks(directory, directory_path, transition_table)
     tf = time.perf_counter()
     parallel_time = tf - ti
     print(f"Parallel time: {parallel_time:0.4f} seconds")
+
+    # Calculate speedup, efficiency and number of cores
     num_cores = multiprocessing.cpu_count()
+    speedup = sequential_time / parallel_time
+    efficiency = speedup / num_cores
+
     print(f"Number of CPU cores available: {num_cores}")
-    speedup = sequencial_time / parallel_time
     print(f"Speedup: {speedup:0.4f}")
-    print(f"Eficiency: {speedup/num_cores:0.4f}")
+    print(f"Efficiency: {efficiency:0.4f}")
+
 
 if __name__ == "__main__":
     main()

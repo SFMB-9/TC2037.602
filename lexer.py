@@ -1,6 +1,6 @@
 # Salvador Federico Milanés Braniff | A01029956
 # Eduardo Porto Morales | A01027893
-# Valeria Tapia | A010xxxxx
+# Valeria Tapia | A01028038
 
 import highlighter as hl
 import os
@@ -222,7 +222,7 @@ def arithmetic_lexer(file_path: str, transition_table: list) -> None:
           token = 'ERR'
 
         if lexem != '' and token != '':
-          print(f"{lexem} {token}")
+          print_verbose(f"{lexem} {token}")
 
           # Call the colorizer function
           formatted_token = hl.colorize(lexem, token)
@@ -259,7 +259,7 @@ def process_directory(directory_path: str, transition_table: list) -> None:
         arithmetic_lexer(file_path, transition_table)
 
 def process_file(file_path: str, transition_table: list) -> None:
-    print(f"Processing file: {file_path}")
+    print_verbose(f"Processing file: {file_path}")
     arithmetic_lexer(file_path, transition_table)
 
 def main():
