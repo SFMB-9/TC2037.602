@@ -36,19 +36,15 @@ def main():
     ti = time.perf_counter()
     sequential_tasks(directory, directory_path, transition_table)
     tf = time.perf_counter()
-    #sequential_time = tf - ti
-    #print(f"Sequential time: {sequential_time:0.4f} seconds")
-    parallel_time = tf - ti
-    print(f"Parallel time: {parallel_time:0.4f} seconds")
+    sequential_time = tf - ti
+    print(f"Sequential time: {sequential_time:0.4f} seconds")
 
     # Parallel execution time
     ti = time.perf_counter()
     parallel_tasks(directory, directory_path, transition_table)
     tf = time.perf_counter()
-    sequential_time = tf - ti
-    print(f"Sequential time: {sequential_time:0.4f} seconds")
-    #parallel_time = tf - ti
-    #print(f"Parallel time: {parallel_time:0.4f} seconds")
+    parallel_time = tf - ti
+    print(f"Parallel time: {parallel_time:0.4f} seconds")
 
     # Calculate speedup, efficiency and number of cores
     num_cores = multiprocessing.cpu_count()
