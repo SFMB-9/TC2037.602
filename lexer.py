@@ -1,4 +1,7 @@
 # Salvador Federico Milanés Braniff | A01029956
+# Eduardo Porto Morales | A01027893
+# Valeria Tapia | A01028038
+
 import highlighter as hl
 import os
 from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
@@ -65,8 +68,7 @@ def arithmetic_lexer(file_path: str, transition_table: list) -> None:
     os.makedirs('output_files')
 
   # iteratively generate the output file (will be used for colorizer)
-  file_path = file_path.split("/")[-1]
-  file_name = file_path.split("\\")[-1]
+  file_name = os.path.basename(file_path)
   output_file_name = file_name.split(".")[0]
   output_file_name = f"output_files/{output_file_name}.html"
   output_file = open(output_file_name, 'w')
@@ -220,7 +222,7 @@ def arithmetic_lexer(file_path: str, transition_table: list) -> None:
           token = 'ERR'
 
         if lexem != '' and token != '':
-          print(f"{lexem} {token}")
+          print_verbose(f"{lexem} {token}")
 
           # Call the colorizer function
           formatted_token = hl.colorize(lexem, token)
@@ -247,34 +249,25 @@ def arithmetic_lexer(file_path: str, transition_table: list) -> None:
   return
 
 # --- Functions to process directories and files ---
-def process_directory_sequential(directory_path: str, transition_table: list) -> None:
+def process_directory(directory_path: str, transition_table: list) -> None:
     directory = os.listdir(directory_path)
     for file in directory:
       file_path = os.path.join(directory_path, file)
+      print(f"Found file: {file_path}")
       if file.endswith(".lex"):
         print(f"Processing file: {file}")
         arithmetic_lexer(file_path, transition_table)
 
-def process_file_parallel(file: str) -> None:
-    tasks = []
-    directory = os.path.dirname(file)
-    with ProcessPoolExecutor() as executor:
-        for root, _, files in os.walk(directory):
-            for file in files:
-                if file.endswith('.lex'):
-                    file_path = os.path.join(root, file)
-                    tasks.append(executor.submit(arithmetic_lexer, file_path))
-        for task in tasks:
-            task.result()
-
-def file_sequential(file_path: str, transition_table = load_transition_table("transition_tables/python_lexer.tbl")) -> None:
+def process_file(file_path: str, transition_table: list) -> None:
+    print_verbose(f"Processing file: {file_path}")
     arithmetic_lexer(file_path, transition_table)
 
 def main():
   # Call the arithmetic lexer function with an example input file
   transition_table = load_transition_table("transition_tables/python_lexer.tbl")
   verbose and print_table(transition_table)
-  process_directory_sequential("input_files", transition_table)
+  #process_directory("input_files", transition_table)
+  process_file("input_files/test.lex", transition_table)
 
 if __name__ == "__main__":
   main()
