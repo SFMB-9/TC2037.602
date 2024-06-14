@@ -7,12 +7,6 @@ import time
 import os
 from lexer import process_file, load_transition_table
 
-def timeComparison(func, arg):
-    start = time.time()
-    func(arg)
-    end= time.time()
-    return end - start
-
 def sequential_tasks(directory, directory_path, transition_table):
     #print("Beginnig sequential tasks")
     for file in directory:
@@ -42,15 +36,19 @@ def main():
     ti = time.perf_counter()
     sequential_tasks(directory, directory_path, transition_table)
     tf = time.perf_counter()
-    sequential_time = tf - ti
-    print(f"Sequential time: {sequential_time:0.4f} seconds")
+    #sequential_time = tf - ti
+    #print(f"Sequential time: {sequential_time:0.4f} seconds")
+    parallel_time = tf - ti
+    print(f"Parallel time: {parallel_time:0.4f} seconds")
 
     # Parallel execution time
     ti = time.perf_counter()
     parallel_tasks(directory, directory_path, transition_table)
     tf = time.perf_counter()
-    parallel_time = tf - ti
-    print(f"Parallel time: {parallel_time:0.4f} seconds")
+    sequential_time = tf - ti
+    print(f"Sequential time: {sequential_time:0.4f} seconds")
+    #parallel_time = tf - ti
+    #print(f"Parallel time: {parallel_time:0.4f} seconds")
 
     # Calculate speedup, efficiency and number of cores
     num_cores = multiprocessing.cpu_count()

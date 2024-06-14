@@ -267,7 +267,7 @@ def main():
   transition_table = load_transition_table("transition_tables/python_lexer.tbl")
   verbose and print_table(transition_table)
   #process_directory("input_files", transition_table)
-  process_file("input_files/test.lex")
+  process_file("input_files/test.lex", transition_table)
 
 if __name__ == "__main__":
   main()
